@@ -9,10 +9,14 @@ import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.internet.InternetAddress;
+import javax.naming.Context;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+import javax.naming.directory.InitialDirContext;
 
 public class UnknownHostMailRemovalTool {
 
-	public static void main(String[] args) throws MessagingException {
+	public static void main(String[] args) throws MessagingException, NamingException {
 		if (args.length != 3) {
 			System.err.println("Invalid arguments.");
 			System.exit(1);
@@ -34,12 +38,12 @@ public class UnknownHostMailRemovalTool {
 				return new PasswordAuthentication(userName, password);
 			}
 		});
-		session.setDebug(true);
+		// session.setDebug(true);
 
 		new UnknownHostMailRemovalTool().process(session);
 	}
 
-	private void process(Session session) throws MessagingException {
+	private void process(Session session) throws MessagingException, NamingException {
 		try (AutoCloseableStore closeableStore =
 			new AutoCloseableStore(session.getStore("pop3"))) {
 
@@ -60,8 +64,11 @@ public class UnknownHostMailRemovalTool {
 						if (address.contains("@")) {
 							String domain = address.split("@")[1];
 
-							System.out.println(domain);
-							// TODO: nslookup
+							if (isValidDomain(domain)) {
+								System.out.format("'%s' is valid.\n", domain);
+							} else {
+								System.out.format("'%s' is invalid.\n", domain);
+							}
 						}
 					}
 
@@ -72,6 +79,19 @@ public class UnknownHostMailRemovalTool {
 				}
 			}
 		}
+	}
 
+	private boolean isValidDomain(String domain) throws NamingException {
+		try {
+			Properties props = new Properties();
+			props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory");
+			props.put(Context.PROVIDER_URL, "dns:");
+
+			new InitialDirContext(props).getAttributes(domain);
+
+			return true;
+		} catch (NameNotFoundException e) {
+			return false;
+		}
 	}
 }
