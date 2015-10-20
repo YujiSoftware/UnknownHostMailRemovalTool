@@ -1,3 +1,5 @@
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.Address;
@@ -15,6 +17,12 @@ import javax.naming.NamingException;
 import javax.naming.directory.InitialDirContext;
 
 public class UnknownHostMailRemovalTool {
+
+	/**
+	 * ドメイン名のキャッシュ
+	 * (Key - ドメイン名, Value - 有効なドメイン名なら true, 無効なドメイン名なら false)
+	 */
+	private Map<String, Boolean> domainCache = new HashMap<String, Boolean>();
 
 	public static void main(String[] args) throws MessagingException, NamingException {
 		if (args.length != 3) {
@@ -82,16 +90,20 @@ public class UnknownHostMailRemovalTool {
 	}
 
 	private boolean isValidDomain(String domain) throws NamingException {
-		try {
-			Properties props = new Properties();
-			props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory");
-			props.put(Context.PROVIDER_URL, "dns:");
+		return domainCache.computeIfAbsent(domain, d -> {
+			try {
+				Properties props = new Properties();
+				props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory");
+				props.put(Context.PROVIDER_URL, "dns:");
 
-			new InitialDirContext(props).getAttributes(domain);
+				new InitialDirContext(props).getAttributes(domain);
 
-			return true;
-		} catch (NameNotFoundException e) {
-			return false;
-		}
+				return true;
+			} catch (NameNotFoundException e) {
+				return false;
+			} catch (NamingException e) {
+				throw new UncheckedNamingException(e);
+			}
+		});
 	}
 }
