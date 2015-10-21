@@ -96,7 +96,8 @@ public class UnknownHostMailRemovalTool {
 				props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory");
 				props.put(Context.PROVIDER_URL, "dns:");
 
-				new InitialDirContext(props).getAttributes(domain);
+				InitialDirContext context = new InitialDirContext(props);
+				context.getAttributes(domain, new String[] { "MX" });
 
 				return true;
 			} catch (NameNotFoundException e) {
