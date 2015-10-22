@@ -10,6 +10,7 @@ import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Store;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.naming.Context;
 import javax.naming.NameNotFoundException;
@@ -65,17 +66,20 @@ public class UnknownHostMailRemovalTool {
 				folder.open(Folder.READ_ONLY);
 
 				for (Message message : folder.getMessages()) {
-					for (Address from : message.getFrom()) {
-						String address = ((InternetAddress) from).getAddress().toString();
-						if (address.contains("@")) {
-							String domain = address.split("@")[1];
+					try {
+						for (Address from : message.getFrom()) {
+							String address = ((InternetAddress) from).getAddress().toString();
+							if (address.contains("@")) {
+								String domain = address.split("@")[1];
 
-							if (isValidDomain(domain)) {
-								System.out.format("'%s' is valid.\n", domain);
-							} else {
-								System.out.format("'%s' is invalid.\n", domain);
+								if (!isValidDomain(domain)) {
+									System.out.format("%d: %s [%s]\n",
+										message.getMessageNumber(), message.getSubject(), address);
+								}
 							}
 						}
+					} catch (AddressException e) {
+						System.err.println(message.getMessageNumber() + ": " + e.getMessage());
 					}
 				}
 			}
