@@ -64,9 +64,7 @@ public class UnknownHostMailRemovalTool {
 				Folder folder = closeableFolder.get();
 				folder.open(Folder.READ_ONLY);
 
-				int count = 0;
 				for (Message message : folder.getMessages()) {
-					boolean isValid = false;
 					for (Address from : message.getFrom()) {
 						String address = ((InternetAddress) from).getAddress().toString();
 						if (address.contains("@")) {
@@ -78,11 +76,6 @@ public class UnknownHostMailRemovalTool {
 								System.out.format("'%s' is invalid.\n", domain);
 							}
 						}
-					}
-
-					// TODO: ERASE
-					if (count > 10) {
-						break;
 					}
 				}
 			}
