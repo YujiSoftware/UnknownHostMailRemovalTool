@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import javax.mail.Address;
 import javax.mail.Authenticator;
+import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -75,11 +76,25 @@ public class UnknownHostMailRemovalTool {
 								if (!isValidDomain(domain)) {
 									System.out.format("%d: %s [%s]\n",
 										message.getMessageNumber(), message.getSubject(), address);
+
+									message.setFlag(Flags.Flag.DELETED, true);
 								}
 							}
 						}
 					} catch (AddressException e) {
 						System.err.println(message.getMessageNumber() + ": " + e.getMessage());
+					}
+				}
+
+				while (true) {
+					System.out.println("Are you sure you want to permanently delete? [y/n]");
+					String input = System.console().readLine();
+
+					if (input.equalsIgnoreCase("y")) {
+						folder.expunge();
+						break;
+					} else if (input.equalsIgnoreCase("n")) {
+						break;
 					}
 				}
 			}
