@@ -1,14 +1,15 @@
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.Address;
-import javax.mail.Authenticator;
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.internet.AddressException;
@@ -26,28 +27,16 @@ public class UnknownHostMailRemovalTool {
 	 */
 	private Map<String, Boolean> domainCache = new HashMap<String, Boolean>();
 
-	public static void main(String[] args) throws MessagingException, NamingException {
-		if (args.length != 3) {
-			System.err.println("Invalid arguments.");
-			System.exit(1);
-			return;
-		}
+	public static void main(String[] args) throws MessagingException, NamingException, IOException {
+		Path path =
+			args.length > 0
+				? Paths.get(args[0])
+				: Paths.get("Config.properties");
 
-		String host = args[0];
-		String userName = args[1];
-		String password = args[2];
+		Config config = new Config(path);
 
-		Properties props = new Properties();
-		props.setProperty("mail.pop3.host", host);
-		props.setProperty("mail.pop3.port", "110");
-		props.setProperty("mail.pop3.connectiontimeout", "600000");
-		props.setProperty("mail.pop3.timeout", "600000");
-
-		Session session = Session.getInstance(props, new Authenticator() {
-			protected PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication(userName, password);
-			}
-		});
+		Session session =
+			Session.getInstance(config.getProperties(), config.getAuthenticator());
 		// session.setDebug(true);
 
 		new UnknownHostMailRemovalTool().process(session);
