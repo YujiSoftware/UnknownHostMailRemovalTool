@@ -39,7 +39,13 @@ public class UnknownHostMailRemovalTool {
 			Session.getInstance(config.getProperties(), config.getAuthenticator());
 		// session.setDebug(true);
 
-		new UnknownHostMailRemovalTool().process(session);
+		new UnknownHostMailRemovalTool(config.getIgnoreDomains()).process(session);
+	}
+
+	private UnknownHostMailRemovalTool(String[] ignoreDomains) {
+		for (String ignoreDomain : ignoreDomains) {
+			domainCache.put(ignoreDomain, true);
+		}
 	}
 
 	private void process(Session session) throws MessagingException, NamingException {

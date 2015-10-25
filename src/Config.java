@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Properties;
 
 import javax.mail.Authenticator;
@@ -11,6 +12,7 @@ public class Config {
 	private final Properties props;
 	private final String username;
 	private final String password;
+	private final String[] ignoreDomains;
 
 	public Config(Path configFile) throws IOException {
 		this.props = new Properties();
@@ -18,6 +20,7 @@ public class Config {
 
 		this.username = props.getProperty("mail.username");
 		this.password = props.getProperty("mail.password");
+		this.ignoreDomains = props.getProperty("mail.ignore.domain", "").split(";");
 	}
 
 	public Properties getProperties() {
@@ -31,5 +34,9 @@ public class Config {
 				return new PasswordAuthentication(username, password);
 			}
 		};
+	}
+
+	public String[] getIgnoreDomains() {
+		return Arrays.copyOf(ignoreDomains, ignoreDomains.length);
 	}
 }
