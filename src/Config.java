@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
 
 public class Config {
 
@@ -27,16 +28,16 @@ public class Config {
 		return props;
 	}
 
-	public Authenticator getAuthenticator() {
-		return new Authenticator() {
+	public String[] getIgnoreDomains() {
+		return Arrays.copyOf(ignoreDomains, ignoreDomains.length);
+	}
+
+	public Session getSession() {
+		return Session.getInstance(props, new Authenticator() {
 			@Override
 			protected PasswordAuthentication getPasswordAuthentication() {
 				return new PasswordAuthentication(username, password);
 			}
-		};
-	}
-
-	public String[] getIgnoreDomains() {
-		return Arrays.copyOf(ignoreDomains, ignoreDomains.length);
+		});
 	}
 }

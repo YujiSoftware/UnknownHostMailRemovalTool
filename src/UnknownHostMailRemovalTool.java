@@ -21,11 +21,13 @@ import javax.naming.directory.InitialDirContext;
 
 public class UnknownHostMailRemovalTool {
 
+	private final Config config;
+
 	/**
 	 * ドメイン名のキャッシュ
 	 * (Key - ドメイン名, Value - 有効なドメイン名なら true, 無効なドメイン名なら false)
 	 */
-	private Map<String, Boolean> domainCache = new HashMap<String, Boolean>();
+	private final Map<String, Boolean> domainCache = new HashMap<String, Boolean>();
 
 	public static void main(String[] args) throws MessagingException, NamingException, IOException {
 		Path path =
@@ -33,22 +35,20 @@ public class UnknownHostMailRemovalTool {
 				? Paths.get(args[0])
 				: Paths.get("Config.properties");
 
-		Config config = new Config(path);
-
-		Session session =
-			Session.getInstance(config.getProperties(), config.getAuthenticator());
-		// session.setDebug(true);
-
-		new UnknownHostMailRemovalTool(config.getIgnoreDomains()).process(session);
+		new UnknownHostMailRemovalTool(new Config(path)).process();
 	}
 
-	private UnknownHostMailRemovalTool(String[] ignoreDomains) {
-		for (String ignoreDomain : ignoreDomains) {
+	private UnknownHostMailRemovalTool(Config config) {
+		this.config = config;
+
+		for (String ignoreDomain : config.getIgnoreDomains()) {
 			domainCache.put(ignoreDomain, true);
 		}
 	}
 
-	private void process(Session session) throws MessagingException, NamingException {
+	private void process() throws MessagingException, NamingException {
+		Session session = config.getSession();
+
 		try (AutoCloseableStore closeableStore =
 			new AutoCloseableStore(session.getStore("pop3"))) {
 
