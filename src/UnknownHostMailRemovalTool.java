@@ -61,7 +61,11 @@ public class UnknownHostMailRemovalTool {
 				Folder folder = closeableFolder.get();
 				folder.open(Folder.READ_ONLY);
 
-				for (Message message : folder.getMessages()) {
+				int start = config.getStartMessageNumber();
+				int count = folder.getMessageCount();
+				for (int i = start; i <= count; i++) {
+					Message message = folder.getMessage(i);
+
 					try {
 						for (Address from : message.getFrom()) {
 							String address = ((InternetAddress) from).getAddress().toString();
