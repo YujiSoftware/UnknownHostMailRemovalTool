@@ -50,6 +50,7 @@ public class UnknownHostMailRemovalTool {
 
 	private void process() throws MessagingException, NamingException, IOException {
 		Session session = config.getSession();
+		session.setDebug(true);
 
 		try (AutoCloseableStore closeableStore =
 			new AutoCloseableStore(session.getStore("pop3"))) {
@@ -61,7 +62,7 @@ public class UnknownHostMailRemovalTool {
 				new AutoCloseableFolder(store.getFolder("INBOX"))) {
 
 				Folder folder = closeableFolder.get();
-				folder.open(Folder.READ_ONLY);
+				folder.open(Folder.READ_WRITE);
 
 				int start = config.getStartMessageNumber();
 				int count = folder.getMessageCount();
@@ -89,7 +90,7 @@ public class UnknownHostMailRemovalTool {
 
 				Answer answer = confirm("Are you sure you want to permanently delete? [y/n]");
 				if (answer == Answer.YES) {
-					folder.expunge();
+					closeableFolder.setExpunge(true);
 				}
 			}
 		}
