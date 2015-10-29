@@ -1,4 +1,6 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -46,7 +48,7 @@ public class UnknownHostMailRemovalTool {
 		}
 	}
 
-	private void process() throws MessagingException, NamingException {
+	private void process() throws MessagingException, NamingException, IOException {
 		Session session = config.getSession();
 
 		try (AutoCloseableStore closeableStore =
@@ -85,16 +87,9 @@ public class UnknownHostMailRemovalTool {
 					}
 				}
 
-				while (true) {
-					System.out.println("Are you sure you want to permanently delete? [y/n]");
-					String input = System.console().readLine();
-
-					if (input.equalsIgnoreCase("y")) {
-						folder.expunge();
-						break;
-					} else if (input.equalsIgnoreCase("n")) {
-						break;
-					}
+				Answer answer = confirm("Are you sure you want to permanently delete? [y/n]");
+				if (answer == Answer.YES) {
+					folder.expunge();
 				}
 			}
 		}
@@ -117,5 +112,25 @@ public class UnknownHostMailRemovalTool {
 				throw new UncheckedNamingException(e);
 			}
 		});
+	}
+
+	private Answer confirm(String message) throws IOException {
+		while (true) {
+			System.out.println(message);
+
+			String input =
+				new BufferedReader(new InputStreamReader(System.in)).readLine();
+
+			if (input.equalsIgnoreCase("y")) {
+				return Answer.YES;
+			} else if (input.equalsIgnoreCase("n")) {
+				return Answer.NO;
+			}
+		}
+	}
+
+	private enum Answer {
+		YES,
+		NO
 	}
 }
