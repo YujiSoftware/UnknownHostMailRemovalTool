@@ -57,6 +57,7 @@ public class UnknownHostMailRemovalTool {
 			try (AutoCloseableFolder folder = new AutoCloseableFolder(store.getFolder("INBOX"))) {
 				folder.open(Folder.READ_WRITE);
 
+				boolean deleted = false;
 				int start = config.getStartMessageNumber();
 				int count = folder.getMessageCount();
 				for (int i = start; i <= count; i++) {
@@ -73,6 +74,7 @@ public class UnknownHostMailRemovalTool {
 										message.getMessageNumber(), message.getSubject(), address);
 
 									message.setFlag(Flags.Flag.DELETED, true);
+									deleted = true;
 								}
 							}
 						}
@@ -81,10 +83,13 @@ public class UnknownHostMailRemovalTool {
 					}
 				}
 
-				Answer answer = confirm("Are you sure you want to permanently delete? [y/n]");
-				if (answer == Answer.YES) {
-					folder.setExpunge(true);
+				if (deleted) {
+					Answer answer = confirm("Are you sure you want to permanently delete? [y/n]");
+					if (answer == Answer.YES) {
+						folder.setExpunge(true);
+					}
 				}
+
 			}
 		}
 	}
