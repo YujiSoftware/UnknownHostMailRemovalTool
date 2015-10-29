@@ -13,7 +13,6 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
-import javax.mail.Store;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.naming.Context;
@@ -50,18 +49,12 @@ public class UnknownHostMailRemovalTool {
 
 	private void process() throws MessagingException, NamingException, IOException {
 		Session session = config.getSession();
-		session.setDebug(true);
+		// session.setDebug(true);
 
-		try (AutoCloseableStore closeableStore =
-			new AutoCloseableStore(session.getStore("pop3"))) {
-
-			Store store = closeableStore.get();
+		try (AutoCloseableStore store = new AutoCloseableStore(session.getStore("pop3"))) {
 			store.connect();
 
-			try (AutoCloseableFolder closeableFolder =
-				new AutoCloseableFolder(store.getFolder("INBOX"))) {
-
-				Folder folder = closeableFolder.get();
+			try (AutoCloseableFolder folder = new AutoCloseableFolder(store.getFolder("INBOX"))) {
 				folder.open(Folder.READ_WRITE);
 
 				int start = config.getStartMessageNumber();
@@ -90,7 +83,7 @@ public class UnknownHostMailRemovalTool {
 
 				Answer answer = confirm("Are you sure you want to permanently delete? [y/n]");
 				if (answer == Answer.YES) {
-					closeableFolder.setExpunge(true);
+					folder.setExpunge(true);
 				}
 			}
 		}
