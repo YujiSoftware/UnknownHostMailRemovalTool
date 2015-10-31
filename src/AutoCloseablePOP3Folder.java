@@ -1,3 +1,6 @@
+import java.io.IOException;
+import java.io.InputStream;
+
 import javax.mail.FetchProfile;
 import javax.mail.Flags;
 import javax.mail.Folder;
@@ -11,13 +14,15 @@ import javax.mail.event.MessageChangedListener;
 import javax.mail.event.MessageCountListener;
 import javax.mail.search.SearchTerm;
 
-public class AutoCloseableFolder implements AutoCloseable {
+import com.sun.mail.pop3.POP3Folder;
 
-	private final Folder folder;
+public class AutoCloseablePOP3Folder implements AutoCloseable {
+
+	private final POP3Folder folder;
 
 	private boolean expunge = false;
 
-	public AutoCloseableFolder(Folder folder) {
+	public AutoCloseablePOP3Folder(POP3Folder folder) {
 		this.folder = folder;
 	}
 
@@ -37,19 +42,11 @@ public class AutoCloseableFolder implements AutoCloseable {
 		return folder.getFullName();
 	}
 
-	public URLName getURLName() throws MessagingException {
-		return folder.getURLName();
-	}
-
-	public Store getStore() {
-		return folder.getStore();
-	}
-
-	public Folder getParent() throws MessagingException {
+	public Folder getParent() {
 		return folder.getParent();
 	}
 
-	public boolean exists() throws MessagingException {
+	public boolean exists() {
 		return folder.exists();
 	}
 
@@ -57,36 +54,16 @@ public class AutoCloseableFolder implements AutoCloseable {
 		return folder.list(pattern);
 	}
 
-	public Folder[] listSubscribed(String pattern) throws MessagingException {
-		return folder.listSubscribed(pattern);
-	}
-
-	public Folder[] list() throws MessagingException {
-		return folder.list();
-	}
-
-	public Folder[] listSubscribed() throws MessagingException {
-		return folder.listSubscribed();
-	}
-
-	public char getSeparator() throws MessagingException {
+	public char getSeparator() {
 		return folder.getSeparator();
 	}
 
-	public int getType() throws MessagingException {
+	public int getType() {
 		return folder.getType();
 	}
 
 	public boolean create(int type) throws MessagingException {
 		return folder.create(type);
-	}
-
-	public boolean isSubscribed() {
-		return folder.isSubscribed();
-	}
-
-	public void setSubscribed(boolean subscribe) throws MessagingException {
-		folder.setSubscribed(subscribe);
 	}
 
 	public boolean hasNewMessages() throws MessagingException {
@@ -113,12 +90,16 @@ public class AutoCloseableFolder implements AutoCloseable {
 		folder.close(expunge);
 	}
 
-	public boolean isOpen() {
-		return folder.isOpen();
+	public URLName getURLName() throws MessagingException {
+		return folder.getURLName();
 	}
 
-	public int getMode() {
-		return folder.getMode();
+	public Store getStore() {
+		return folder.getStore();
+	}
+
+	public boolean isOpen() {
+		return folder.isOpen();
 	}
 
 	public Flags getPermanentFlags() {
@@ -127,6 +108,62 @@ public class AutoCloseableFolder implements AutoCloseable {
 
 	public int getMessageCount() throws MessagingException {
 		return folder.getMessageCount();
+	}
+
+	public Message getMessage(int msgno) throws MessagingException {
+		return folder.getMessage(msgno);
+	}
+
+	public void appendMessages(Message[] msgs) throws MessagingException {
+		folder.appendMessages(msgs);
+	}
+
+	public Message[] expunge() throws MessagingException {
+		return folder.expunge();
+	}
+
+	public void fetch(Message[] msgs, FetchProfile fp) throws MessagingException {
+		folder.fetch(msgs, fp);
+	}
+
+	public Folder[] listSubscribed(String pattern) throws MessagingException {
+		return folder.listSubscribed(pattern);
+	}
+
+	public Folder[] list() throws MessagingException {
+		return folder.list();
+	}
+
+	public String getUID(Message msg) throws MessagingException {
+		return folder.getUID(msg);
+	}
+
+	public Folder[] listSubscribed() throws MessagingException {
+		return folder.listSubscribed();
+	}
+
+	public int getSize() throws MessagingException {
+		return folder.getSize();
+	}
+
+	public int[] getSizes() throws MessagingException {
+		return folder.getSizes();
+	}
+
+	public InputStream listCommand() throws MessagingException, IOException {
+		return folder.listCommand();
+	}
+
+	public boolean isSubscribed() {
+		return folder.isSubscribed();
+	}
+
+	public void setSubscribed(boolean subscribe) throws MessagingException {
+		folder.setSubscribed(subscribe);
+	}
+
+	public int getMode() {
+		return folder.getMode();
 	}
 
 	public int getNewMessageCount() throws MessagingException {
@@ -141,10 +178,6 @@ public class AutoCloseableFolder implements AutoCloseable {
 		return folder.getDeletedMessageCount();
 	}
 
-	public Message getMessage(int msgnum) throws MessagingException {
-		return folder.getMessage(msgnum);
-	}
-
 	public Message[] getMessages(int start, int end) throws MessagingException {
 		return folder.getMessages(start, end);
 	}
@@ -155,14 +188,6 @@ public class AutoCloseableFolder implements AutoCloseable {
 
 	public Message[] getMessages() throws MessagingException {
 		return folder.getMessages();
-	}
-
-	public void appendMessages(Message[] msgs) throws MessagingException {
-		folder.appendMessages(msgs);
-	}
-
-	public void fetch(Message[] msgs, FetchProfile fp) throws MessagingException {
-		folder.fetch(msgs, fp);
 	}
 
 	public void setFlags(Message[] msgs, Flags flag, boolean value) throws MessagingException {
@@ -179,10 +204,6 @@ public class AutoCloseableFolder implements AutoCloseable {
 
 	public void copyMessages(Message[] msgs, Folder folder) throws MessagingException {
 		folder.copyMessages(msgs, folder);
-	}
-
-	public Message[] expunge() throws MessagingException {
-		return folder.expunge();
 	}
 
 	public Message[] search(SearchTerm term) throws MessagingException {

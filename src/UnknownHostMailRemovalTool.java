@@ -20,6 +20,8 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.naming.directory.InitialDirContext;
 
+import com.sun.mail.pop3.POP3Folder;
+
 public class UnknownHostMailRemovalTool {
 
 	private final Config config;
@@ -54,12 +56,15 @@ public class UnknownHostMailRemovalTool {
 		try (AutoCloseableStore store = new AutoCloseableStore(session.getStore("pop3"))) {
 			store.connect();
 
-			try (AutoCloseableFolder folder = new AutoCloseableFolder(store.getFolder("INBOX"))) {
+			try (AutoCloseablePOP3Folder folder =
+				new AutoCloseablePOP3Folder((POP3Folder) store.getFolder("INBOX"))) {
+
 				folder.open(Folder.READ_WRITE);
 
 				boolean deleted = false;
 				int start = config.getStartMessageNumber();
 				int count = folder.getMessageCount();
+				Message lastMessage = null;
 				for (int i = start; i <= count; i++) {
 					Message message = folder.getMessage(i);
 
@@ -81,6 +86,8 @@ public class UnknownHostMailRemovalTool {
 					} catch (AddressException e) {
 						System.err.println(message.getMessageNumber() + ": " + e.getMessage());
 					}
+
+					lastMessage = message;
 				}
 
 				if (deleted) {
@@ -88,6 +95,10 @@ public class UnknownHostMailRemovalTool {
 					if (answer == Answer.YES) {
 						folder.setExpunge(true);
 					}
+				}
+
+				if (lastMessage != null) {
+					System.out.println("Last message uid:" + folder.getUID(lastMessage));
 				}
 
 			}
