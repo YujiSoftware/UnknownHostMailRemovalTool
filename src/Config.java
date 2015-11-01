@@ -14,7 +14,7 @@ public class Config {
 	private final String username;
 	private final String password;
 	private final String[] ignoreDomains;
-	private final int startMessageNumber;
+	private final String startMessageUid;
 
 	public Config(Path configFile) throws IOException {
 		this.props = new Properties();
@@ -24,8 +24,8 @@ public class Config {
 		this.password = props.getProperty("mail.password");
 		this.ignoreDomains =
 			props.getProperty("mail.removal.ignoredomain", "").split(";");
-		this.startMessageNumber =
-			Integer.parseInt(props.getProperty("mail.removal.startmessagenumber"));
+		this.startMessageUid =
+			props.getProperty("mail.removal.startmessageuid");
 	}
 
 	public Properties getProperties() {
@@ -36,8 +36,8 @@ public class Config {
 		return Arrays.copyOf(ignoreDomains, ignoreDomains.length);
 	}
 
-	public int getStartMessageNumber() {
-		return startMessageNumber;
+	public String getStartMessageUid() {
+		return startMessageUid;
 	}
 
 	public Session getSession() {

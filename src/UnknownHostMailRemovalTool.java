@@ -8,11 +8,13 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.Address;
+import javax.mail.FetchProfile;
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
+import javax.mail.UIDFolder;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.naming.Context;
@@ -61,12 +63,28 @@ public class UnknownHostMailRemovalTool {
 
 				folder.open(Folder.READ_WRITE);
 
+				Message[] messages = folder.getMessages();
+
+				// Create uid cache
+				FetchProfile fp = new FetchProfile();
+				fp.add(UIDFolder.FetchProfileItem.UID);
+				folder.fetch(messages, fp);
+
+				// Find uid message
+				int start = 0;
+				String startMessageUid = config.getStartMessageUid();
+				for (int i = 0; i < messages.length; i++) {
+					Message message = messages[i];
+					if (folder.getUID(message).equals(startMessageUid)) {
+						start = i + 1;
+						break;
+					}
+				}
+
 				boolean deleted = false;
-				int start = config.getStartMessageNumber();
-				int count = folder.getMessageCount();
 				Message lastMessage = null;
-				for (int i = start; i <= count; i++) {
-					Message message = folder.getMessage(i);
+				for (int i = start; i < messages.length; i++) {
+					Message message = messages[i];
 
 					try {
 						for (Address from : message.getFrom()) {
