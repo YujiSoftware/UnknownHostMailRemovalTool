@@ -82,7 +82,7 @@ public class UnknownHostMailRemovalTool {
 				}
 
 				boolean deleted = false;
-				Message lastMessage = null;
+				Message lastUndeletedMessage = null;
 				for (int i = start; i < messages.length; i++) {
 					Message message = messages[i];
 
@@ -105,7 +105,9 @@ public class UnknownHostMailRemovalTool {
 						System.err.println(message.getMessageNumber() + ": " + e.getMessage());
 					}
 
-					lastMessage = message;
+					if (!message.getFlags().contains(Flags.Flag.DELETED)) {
+						lastUndeletedMessage = message;
+					}
 				}
 
 				if (deleted) {
@@ -115,8 +117,8 @@ public class UnknownHostMailRemovalTool {
 					}
 				}
 
-				if (lastMessage != null) {
-					System.out.println("Last message uid:" + folder.getUID(lastMessage));
+				if (lastUndeletedMessage != null) {
+					System.out.println("Last message uid:" + folder.getUID(lastUndeletedMessage));
 				}
 
 			}
