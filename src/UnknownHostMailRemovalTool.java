@@ -102,7 +102,14 @@ public class UnknownHostMailRemovalTool {
 							}
 						}
 					} catch (AddressException e) {
-						System.err.println(message.getMessageNumber() + ": " + e.getMessage());
+						System.out.format("%d: %s [%s]\n",
+							message.getMessageNumber(), message.getSubject(), e.getMessage());
+
+						message.setFlag(Flags.Flag.DELETED, true);
+						deleted = true;
+					} catch (UncheckedNamingException e) {
+						System.err.format("%d: %s [%s]\n",
+							message.getMessageNumber(), message.getSubject(), e.getMessage());
 					}
 
 					if (!message.getFlags().contains(Flags.Flag.DELETED)) {
